@@ -47,30 +47,9 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 2. Extract the archive and place the `antigravity-cli-statusline` folder into your `~/.gemini/skills/` directory.
 3. When interacting with Antigravity CLI, simply run `/antigravity-cli-statusline` to trigger the skill.
 
-## Add Your Language Translation via AI
-
-You can easily generate a new language translation for this Skill using an AI agent (like Gemini). To ensure even fast models (like Gemini Flash) can process this perfectly, just copy and paste the prompt below.
-
-Replace `[LANG_CODE]` with your target language code (e.g., `ja`), and `[Target Language]` with the language name (e.g., "Japanese"):
-
-````
-I want to add a [Target Language] translation version for this Antigravity CLI Skill (Language Code: [LANG_CODE]).
-
-Since this project dynamically handles languages within single files, please DO NOT create new directories. Please follow these explicit steps to modify the existing files:
-
-### 1. Modify `SKILL.md`
-- **Find Step 2 (步驟 2)**: Add the `"[Target Language] ([LANG_CODE])"` option to the `options` JSON array.
-- **Find Step 4 (步驟 4)**: Add a bullet point explaining the language format for your code (e.g., `* 若為 [LANG_CODE]，請使用[Target Language]說明配上英文識別碼。`).
-
-### 2. Modify `scripts/statusline-quota.mjs`
-- **Find the `const i18n = {` dictionary**: Add a new `[LANG_CODE]` object inside it. Translate all 9 status indicators into [Target Language]. Look at the `zh-tw` or `us` examples and keep the ANSI color variables (like `${BOLD}`) exactly the same.
-- **Find the `getGitBranch(lang)` function**: Update **all** the hardcoded ternary operators (there are two places) to include the translation for "No VC" in [Target Language].
-- **Find the `countdownVal` variable**: Update the hardcoded ternary operator to include the translation for "N/A" or "None" in [Target Language].
-````
-
 ## Contributing
 
-We welcome contributions! If you have ideas for new features, bug fixes, or improvements, feel free to open an issue or submit a Pull Request. Whether it's adding a new status indicator, improving cross-platform compatibility, or fixing a typo, your help is greatly appreciated.
+We welcome contributions! For details on how to submit Pull Requests, report bugs, or add new language translations via AI, please see our **[Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)**.
 
 ## Acknowledgements
 
