@@ -160,7 +160,7 @@ async function main() {
 
     if (needUpdate) {
       try {
-        const updaterScript = join(os.homedir(), '.gemini', 'hooks', 'fetch-local-quota.mjs');
+        const updaterScript = join(os.homedir(), '.gemini', 'antigravity-cli', 'hooks', 'fetch-local-quota.mjs');
         if (existsSync(updaterScript)) {
           spawn('node', [updaterScript], {
             env: { ...process.env, DISABLE_QUOTA_HOOK: '1' },
