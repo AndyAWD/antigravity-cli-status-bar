@@ -33,6 +33,9 @@
   - CLI 行程所消耗的 RAM 記憶體量
   - 目前工作區專案的 Git 分支
   - 目前工作區專案路徑 (短路徑 / 完整路徑)
+  - 帳號等級 (Account Plan Tier)
+  - 帳號信箱 (Account Email)
+  - AI 點數 (AI Credits)
 - **多國語言支援**：內建繁體中文、英文與日文，並提供讓 AI 一鍵擴充其他語系的動態架構，任何人都能輕鬆新增專屬的語言版本。
 - **設定檔動態解析**：自動處理全域 (`~/.gemini/settings.json`)、CLI 專屬 (`~/.gemini/antigravity-cli/settings.json`) 以及專案層級的設定檔。
 - **無 Python 依賴的跨平台架構**：捨棄傳統的 Python 依賴。針對 macOS/Linux 使用原生指令 (`ps`, `lsof`)；針對 Windows 更實作了專屬的靜默 C# 橋接器 (Silent C# Bridge) 並結合 `windowsHide`，徹底解決終端機閃爍問題，同時強化對 Git 環境變數缺失與記憶體 (`agy.exe`) 抓取準確度的深度相容。

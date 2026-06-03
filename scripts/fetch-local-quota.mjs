@@ -151,12 +151,27 @@ async function fetchLiveQuotaCache() {
   const candidates = findServerCandidates();
   // 跨所有候選者合併模型資料，避免只取到部分模型
   const allModels = {};
+  let accountEmail = '';
+  let planTierName = '';
+  let aiCreditsAmount = '';
+  let planStatusData = {};
+  
   for (const info of candidates) {
     const ports = getListeningPorts(info.pid);
     for (const port of ports) {
       try {
         const response = await requestUserStatus(port, info.csrf_token);
         const userStatus = response.userStatus || {};
+        
+        if (userStatus.email) accountEmail = userStatus.email;
+        if (userStatus.userTier) {
+          if (userStatus.userTier.name) planTierName = userStatus.userTier.name;
+          if (userStatus.userTier.availableCredits && userStatus.userTier.availableCredits.length > 0) {
+            aiCreditsAmount = userStatus.userTier.availableCredits[0].creditAmount || '';
+          }
+        }
+        if (userStatus.planStatus) planStatusData = userStatus.planStatus;
+        
         const cascade = userStatus.cascadeModelConfigData || {};
         for (const model of cascade.clientModelConfigs || []) {
           const quotaInfo = model.quotaInfo;
@@ -195,7 +210,14 @@ async function fetchLiveQuotaCache() {
     }
   }
   if (Object.keys(allModels).length > 0) {
-    return { models: allModels, updatedAt: Date.now() };
+    return { 
+      models: allModels, 
+      updatedAt: Date.now(),
+      email: accountEmail,
+      planTier: planTierName,
+      aiCredits: aiCreditsAmount,
+      planStatus: planStatusData
+    };
   }
   return null;
 }

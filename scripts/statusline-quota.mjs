@@ -264,6 +264,12 @@ async function main() {
     const gitBranch = getGitBranch(lang);
     const projectName = basename(process.cwd());
     const projectFullPath = process.cwd();
+    
+    const unknownStr = lang === 'zh-tw' ? '未知' : (lang === 'jp' ? '不明' : 'Unknown');
+    // 原本透過 meta 取得，現在改為優先透過 cache (背景自動抓取) 取得
+    const planTier = (cache && cache.planTier) ? cache.planTier : (meta?.account?.plan_tier || unknownStr);
+    const accountEmail = (cache && cache.email) ? cache.email : (meta?.account?.email || unknownStr);
+    const aiCredits = (cache && cache.aiCredits) ? cache.aiCredits : (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A'));
 
     const i18n = {
       'zh-tw': {
@@ -275,7 +281,10 @@ async function main() {
         'quota-reset-countdown': `API 重置倒數: ${countdownVal}`,
         'git-branch': `Git 分支: ${BOLD}${gitBranch}${RESET}`,
         'project-path': `專案: ${BOLD}${projectName}${RESET}`,
-        'project-full-path': `專案路徑: ${BOLD}${projectFullPath}${RESET}`
+        'project-full-path': `專案路徑: ${BOLD}${projectFullPath}${RESET}`,
+        'plan-tier': `帳號等級: ${BOLD}${planTier}${RESET}`,
+        'account-email': `帳號: ${BOLD}${accountEmail}${RESET}`,
+        'ai-credits': `AI 點數: ${BOLD}${aiCredits}${RESET}`
       },
       'us': {
         'model-name': `Model: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -286,7 +295,10 @@ async function main() {
         'quota-reset-countdown': `API Reset in: ${countdownVal}`,
         'git-branch': `Git: ${BOLD}${gitBranch}${RESET}`,
         'project-path': `Project: ${BOLD}${projectName}${RESET}`,
-        'project-full-path': `Project Path: ${BOLD}${projectFullPath}${RESET}`
+        'project-full-path': `Project Path: ${BOLD}${projectFullPath}${RESET}`,
+        'plan-tier': `Plan: ${BOLD}${planTier}${RESET}`,
+        'account-email': `Account: ${BOLD}${accountEmail}${RESET}`,
+        'ai-credits': `AI Credits: ${BOLD}${aiCredits}${RESET}`
       },
       'jp': {
         'model-name': `モデル: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -297,7 +309,10 @@ async function main() {
         'quota-reset-countdown': `API リセットまで: ${countdownVal}`,
         'git-branch': `Gitブランチ: ${BOLD}${gitBranch}${RESET}`,
         'project-path': `プロジェクト: ${BOLD}${projectName}${RESET}`,
-        'project-full-path': `プロジェクトパス: ${BOLD}${projectFullPath}${RESET}`
+        'project-full-path': `プロジェクトパス: ${BOLD}${projectFullPath}${RESET}`,
+        'plan-tier': `プラン: ${BOLD}${planTier}${RESET}`,
+        'account-email': `アカウント: ${BOLD}${accountEmail}${RESET}`,
+        'ai-credits': `AI クレジット: ${BOLD}${aiCredits}${RESET}`
       }
     };
 

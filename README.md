@@ -33,6 +33,9 @@ This repository provides a Skill for setting up and customizing the Antigravity 
   - CLI RAM Usage
   - Current Git Branch
   - Project Path (Short / Full)
+  - Account Plan Tier
+  - Account Email
+  - AI Credits
 - **Multi-language Support**: Natively supports Traditional Chinese, English, and Japanese. Features a dynamic architecture that allows you to easily add new languages using AI.
 - **Global & CLI-Specific Settings**: Dynamically parses and updates `~/.gemini/settings.json`, `~/.gemini/antigravity-cli/settings.json`, and project-level settings.
 - **Python-Free Cross-Platform Architecture**: Completely removes Python dependencies. Uses native commands (`ps`, `lsof`) for macOS/Linux. For Windows, it implements a bespoke Silent C# Bridge with `windowsHide` to eliminate terminal flickering, while significantly improving compatibility for environments without Git in PATH and ensuring accurate memory tracking for the `agy.exe` process.
