@@ -123,11 +123,11 @@ $hasBOM = ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -e
 {
   "questions": [
     {
-      "question": "請設定狀態列顯示順序。\n\n目前已選取：\n1. 目前使用的 AI 模型名稱 (model-name)\n2. 帳號真實 API 可用額度 (quota)\n3. 目前對話已消耗的 Context 比例 (context-used)\n\n請在下方輸入框（Other / Write-in）中輸入以逗號分隔的數字序號或英文識別碼 (如：2, 1, context-used)。未填寫的指標將不予顯示。",
+      "question": "請設定狀態列顯示順序。\n\n目前已選取：\n1. 目前使用的 AI 模型名稱 (model-name)\n2. 帳號真實 API 可用額度 (quota)\n3. 目前對話已消耗的 Context 比例 (context-used)\n\n請在下方輸入框「Write-in...」中輸入以逗號分隔的數字序號或英文識別碼 (如：2, 1, context-used)。未填寫的指標將不予顯示。",
       "is_multi_select": false,
       "options": [
         "略過，使用原勾選順序啟用全部指標",
-        "手動排序 (請在下方「其他」或「自訂填寫」欄位中填寫)"
+        "手動排序 (請在下方「Write-in...」欄位中填寫)"
       ]
     }
   ]
