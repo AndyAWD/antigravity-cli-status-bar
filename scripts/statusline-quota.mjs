@@ -339,9 +339,23 @@ async function main() {
     
     for (let i = 0; i < footerItems.length; i++) {
       const item = footerItems[i];
+
+      // 強制換行符號（規範保留識別碼，允許重複出現以產生額外空行）
+      // 注意：連續 n 推入空字串會被 agy CLI 渲染層折疊成單一換行，
+      // 故 fallback 推入單一半形空白以保留可見的空白行。
+      if (item === 'n' || item === 'newline') {
+        if (currentLine !== '') {
+          lines.push(currentLine);
+          currentLine = '';
+        } else {
+          lines.push(' ');
+        }
+        continue;
+      }
+
       let text = activeDict[item];
       if (!text) continue;
-      
+
       const toAdd = currentLine === '' ? text : ` ${GRAY}│${RESET} ${text}`;
       const toAddPlain = stripAnsi(toAdd);
       const currentPlain = stripAnsi(currentLine);

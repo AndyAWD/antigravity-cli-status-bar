@@ -66,6 +66,44 @@
 2.  **指標性參照 (Pointer Referencing)**：在 `SKILL.md` 中，僅保留對該檔案的**明確讀取指令**（例如：`請使用 read_file 工具讀取腳本 scripts/xxx.mjs 並寫入目標位置`）。
 *   **架構效益**：透過這種「延遲載入 (Lazy Loading)」的機制，`SKILL.md` 得以保持極致精簡（Concise is Key）。LLM 只在「真正需要部署的那一刻」才會去獲取腳本內容，大幅降低了模型的認知負擔，並徹底根絕了竄改腳本的幻覺風險。
 
+### 2.3 漸進式揭露的反例：高頻 + 逐字內容的「子代理摘要陷阱 (Sub-agent Summarization Trap)」
+
+漸進式揭露是 Antigravity 官方支援的設計模型（如 [官方 Skills 文件](https://antigravity.google/docs/skills) 所述：代理初始僅載入 frontmatter，技能被選中後才載入完整 `SKILL.md` body，而 `scripts/` 與 `references/` 則按需執行或讀取）。其核心承諾是「延遲載入」（Lazy Loading），但這個機制存在一個**官方文件未明文涵蓋、卻在跨代理實作上普遍可見的隱性失效模式**：當主代理透過子代理（Sub-agent / Explore Agent）讀取 `references/` 時，回傳的常是「自然語言摘要」而非原文。
+
+> **注意（跨代理相容性）**：agy CLI 官方文件目前未明確規範 `references/` 是由主代理直接讀取或可委派子代理。但若本技能被 Claude Code 等其他支援 Skills 規範的代理載入（透過共享 Skills 目錄結構），子代理摘要行為就會浮現。因此即使單純為 agy CLI 設計，仍建議實作此防禦，以保留跨代理可移植性。
+
+對於只需傳達語意的描述性段落，這個機制沒問題；但對於**需要逐字呼叫**的內容（如 agy CLI `ask_question` 工具的 JSON Schema、PowerShell 編碼鐵則的精確語法、跨平台路徑跳脫範本），子代理會自動「整理」、「精簡」、或將不熟悉格式「翻譯」成自己熟悉的標準，導致原文細節徹底遺失。
+
+**陷阱的三重觸發路徑 (Triple Triggers)**：
+
+1. **子代理摘要傳回 (Sub-agent Summarization)**：主代理委派 Explore 子代理讀取 reference 後，回傳的可能僅是「裡面是一份繁中問卷，三個語言選項」，原始 JSON 引號、`questions[].is_multi_select`、字串陣列 `options`、以及頂層必填的 `toolSummary` / `toolAction` 欄位就此消失。
+2. **長對話 Context 壓縮 (Long-context Compaction)**：即使主代理親自 Read 載入了原文，當對話 Context 逼近上限觸發壓縮機制時，靜態 JSON 區塊極易被壓縮層判定為「資訊密度低的可摘要文字」而被自動改寫；尤其像 `toolSummary` / `toolAction` 這類看似可被推導的 metadata 欄位，最易在壓縮中被誤刪。
+3. **異質格式自動「修正」(Cross-CLI Format Coercion)**：當主代理（例如 Claude）誤將 agy CLI 的 `ask_question` 識別為自身熟悉的 `AskUserQuestion`，會基於指令依從性自動把字串陣列 `options` 改寫為帶 `label` + `description` 的物件陣列、把 `is_multi_select` 改成 `multiSelect`、並丟棄 `toolSummary` / `toolAction`——表面合理、實際完全壞掉。
+   * **agy CLI 正確規格（必須 verbatim 保留）**：頂層含 `questions[]`、`toolSummary`（2~5 字名詞片語）、`toolAction`（2~5 字句首動作）；每題含 `question`、`options`（純字串陣列，至少 2 項，**禁止手動添加「其他/Other」**因系統自動提供 Write-in）、可選 `is_multi_select`（預設 `false`）。強烈建議選項可在字串開頭加 `(Recommended)` 前綴讓 UI 標示。
+
+**防禦架構：高頻逐字內容必須回流主檔 + 中頻內容加 Verbatim 護欄**
+
+漸進式揭露不能無腦套用。在拆檔之前，必須對每塊內容做兩維度評估：
+
+| 維度 1：呼叫頻率 | 維度 2：逐字精度需求 | 拆檔策略 |
+|---|---|---|
+| 高（每次必執行）| 高（必須逐字呼叫）| **強制留在 SKILL.md 主檔**（如 `ask_question` JSON）|
+| 中（條件觸發）| 高（必須逐字呼叫）| 留在 `references/` 但檔頭加上「禁止子代理摘要 + 禁止改寫」的明確 Verbatim 護欄 |
+| 任意頻率 | 低（可摘要重述）| 適合拆至 `references/`，可由子代理自由總結 |
+
+對於必須留在 reference 的高精度內容，應在檔頭加入下列宣告，明確要求主代理親自處理：
+
+```markdown
+> [!IMPORTANT]
+> 本檔案含逐字（verbatim）使用的指令片段與 JSON 結構。
+> 1. 禁止透過 Explore / 子代理摘要本檔案 — 主代理必須親自以 Read 工具讀取
+> 2. 禁止改寫、簡化、重新格式化任何程式碼區塊
+> 3. 禁止將指令翻譯成「等效」做法
+> 4. 若內容與你熟悉的其他 CLI / API 格式不同，一律以本檔案為準
+```
+
+**架構意義 (Architectural Significance)**：這揭示了漸進式揭露的設計邊界——它是 **Context 經濟（Context Economy）**與**內容保真度（Content Fidelity）**的權衡，而非一刀切的最佳化原則。架構師在拆檔前必須先問：「這塊內容若被摘要傳回，下游動作會不會壞？」若答案為 Yes，則必須回流主檔或加上 Verbatim 護欄。最終的設計哲學是：**逐字使用的內容靠近執行點、可摘要的內容才適合延遲載入**。
+
 ---
 
 ## 3. 提示詞工程的護欄 (Guardrails)：馴服異質模型的認知邊界
@@ -198,6 +236,7 @@ LLM 處理長文本的基礎是注意力機制 (Attention Mechanism)。當 `SKIL
 
 1.  [ ] **拓撲結構釐清 (Topological Assessment)**：評估任務屬性。若為具備複雜分支與跳轉的非線性任務，是否已導入 ASCII 狀態機（FSM）以建立路由控制？若為純線性任務，章節標籤是否具備足夠的錨點效應？
 2.  [ ] **架構解耦驗證 (Architectural Decoupling)**：是否確實貫徹了「混合架構」精神？高頻率的底層核心運算是否已從 Prompt 中抽離為靜態腳本（`scripts/` 目錄），僅保留高維度的對話與部署邏輯給 AI 處理？
+    *   **【內容保真度評估 (Content Fidelity Assessment)】**：是否已對每塊待拆分內容進行「呼叫頻率 × 逐字精度」二維評估？高頻 + 逐字（如 `ask_question` JSON）是否強制保留於 `SKILL.md` 主檔；中頻 + 逐字（如平台特定指令、PowerShell 編碼鐵則）是否在 `references/` 檔頭加上「禁止子代理摘要 + 禁止改寫」的 Verbatim 護欄？
 3.  [ ] **防禦深度檢查 (Defense-in-Depth Audit)**：
     *   是否已針對易引發「工具幻覺（Tool-use Hallucination）」的步驟（如字串解析），加上了明確的邊界約束指令？
     *   需要動態求值的系統參數，是否使用了具備強烈「反制字面依從性」的佔位符與警告？
