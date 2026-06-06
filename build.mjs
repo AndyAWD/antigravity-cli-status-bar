@@ -24,5 +24,13 @@ fs.cpSync(
   { recursive: true }
 );
 
+if (fs.existsSync(path.join(process.cwd(), 'references'))) {
+  fs.cpSync(
+    path.join(process.cwd(), 'references'),
+    path.join(targetDir, 'references'),
+    { recursive: true }
+  );
+}
+
 console.log(`打包完成！乾淨的擴充包已產生於: ${targetDir}`);
 console.log('若需發佈為壓縮檔供使用者下載，建議透過 GitHub Actions 自動處理，或直接壓縮該資料夾。');
