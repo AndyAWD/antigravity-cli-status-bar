@@ -56,10 +56,9 @@ function stripAnsi(str) {
 function getCliMemoryMB() {
   try {
     if (process.platform === 'win32') {
-      const output = execSync(`wmic process where "name='agy.exe'" get WorkingSetSize`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
-      const matches = output.match(/\d+/g);
-      if (matches) {
-        const totalBytes = matches.reduce((sum, val) => sum + parseInt(val, 10), 0);
+      const output = execSync(`powershell -NoProfile -Command "(Get-Process -Name 'agy' -ErrorAction SilentlyContinue | Measure-Object -Property WorkingSet -Sum).Sum"`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+      const totalBytes = parseInt(output.trim(), 10);
+      if (!isNaN(totalBytes)) {
         return Math.round(totalBytes / 1024 / 1024);
       }
     } else {
